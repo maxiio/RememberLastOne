@@ -1,0 +1,1 @@
+[adobe eula](http://www.adobe.com/products/eulas/)

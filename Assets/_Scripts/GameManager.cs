@@ -6,30 +6,36 @@ using UnityEngine.SceneManagement;
 
 
 public class GameManager : MonoBehaviour {
-	public static GameManager instance=null;
+	public static GameManager Instance=null;
 
 
-	public Camera mainCam;
+	public Camera MainCam;
 
 	public GameObject ShowLevelUI;
-	public Text scoreText;
+	public Text ScoreText;
+	public Text HighScoreText;
+	public Text ThisTimeScoreText;
 
-	public GameObject gameOverUI;
+	public GameObject GameOverUI;
 
-
-	public bool isRandomSize=true;
-
-	public bool isRandomColor=true;
-
-	public float showingLevelTime=1f;
-
-	public float sizeMin=.5f;
-	public float sizeMax=2f;
-
-	private int _objectNum;
+	public CameraFade TheCameraFade;
 
 
-	private List<SimpleTransform> objectTransforms = new List<SimpleTransform> ();
+	public bool IsRandomSize=true;
+
+	public bool IsRandomColor=true;
+
+	public float ShowingLevelTime=1f;
+
+	public float SizeMin=.5f;
+	public float SizeMax=2f;
+
+	private int _round; 
+	private int _highScore;
+	private string _highScoreKey= "HighScore";
+
+
+	private List<SimpleTransform> _objectTransforms = new List<SimpleTransform> ();
 
 
 
@@ -37,16 +43,16 @@ public class GameManager : MonoBehaviour {
 
 	void Awake(){
 
-		if (instance == null) {
+		if (Instance == null) {
 
-			instance = this;
-		} else if (instance != null) {
+			Instance = this;
+		} else if (Instance != null) {
 			Destroy (gameObject);
 		}
 
-		if (mainCam == null) {
+		if (MainCam == null) {
 
-			mainCam = Camera.main;
+			MainCam = Camera.main;
 		}
 
 	}
@@ -55,20 +61,25 @@ public class GameManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		_objectNum = 1;
+		_round = 1;
+		_highScore = PlayerPrefs.GetInt (_highScoreKey, 0);
+
 
 		ShowLevelUI.SetActive (false);
+		GameOverUI.SetActive (false);
+
+
 	}
 
 
 
 	private bool IsInForbiddenArea(SimpleTransform tran){
 
-		for (int i = 0; i < objectTransforms.Count; i++) {
+		for (int i = 0; i < _objectTransforms.Count; i++) {
 
 
-			if (Vector2.Distance (tran.Position, objectTransforms[i].Position) 
-				< (tran.LocalScale.x / 2f + objectTransforms[i].LocalScale.x / 2f)) {
+			if (Vector2.Distance (tran.Position, _objectTransforms[i].Position) 
+				< (tran.LocalScale.x / 2f + _objectTransforms[i].LocalScale.x / 2f)) {
 
 
 				return true;
@@ -88,7 +99,7 @@ public class GameManager : MonoBehaviour {
 
 
 
-		objectTransforms.Add (tran);
+		_objectTransforms.Add (tran);
 
 	}
 
@@ -115,7 +126,7 @@ public class GameManager : MonoBehaviour {
 		SimpleTransform tran=new SimpleTransform();
 
 		//scale
-		float size= Random.Range (sizeMin, sizeMax);
+		float size= Random.Range (SizeMin, SizeMax);
 		Vector2 scale = new Vector2 (size, size);
 
 		//rotation
@@ -125,11 +136,11 @@ public class GameManager : MonoBehaviour {
 
 
 		//position
-		float x=Random.Range(-mainCam.aspect*mainCam.orthographicSize+scale.x/2,
-			mainCam.aspect*mainCam.orthographicSize-scale.x/2);
+		float x=Random.Range(-MainCam.aspect*MainCam.orthographicSize+scale.x/2,
+			MainCam.aspect*MainCam.orthographicSize-scale.x/2);
 
-		float y=Random.Range(-mainCam.orthographicSize +scale.y/2,
-			mainCam.orthographicSize -scale.y/2);
+		float y=Random.Range(-MainCam.orthographicSize +scale.y/2,
+			MainCam.orthographicSize -scale.y/2);
 
 		Vector2 position = new Vector2 (x, y);
 
@@ -151,14 +162,25 @@ public class GameManager : MonoBehaviour {
 		return Random.ColorHSV ();
 	}
 
-	public void ShowRound(){
-		_objectNum++;
+	public void NextRound(){
+
+
+		_round++;
 
 		//show score aka the level/ circle num with animation
-		ShowLevelUI.SetActive(true);
-		scoreText.text = "Round " + _objectNum;
 
-		Invoke ("HideRound", showingLevelTime);
+
+		ShowLevelUI.SetActive(true);
+		ScoreText.text = "Round " + _round;
+
+
+		if (_round > _highScore) {
+
+			PlayerPrefs.SetInt (_highScoreKey, _round);
+
+		}
+
+		Invoke ("HideRound", ShowingLevelTime);
 
 
 	}
@@ -170,9 +192,13 @@ public class GameManager : MonoBehaviour {
 
 	public void GameOver(){
 
-		gameOverUI.SetActive (true);
+		TheCameraFade.FadeOut (true);
 
-		Time.timeScale = 0f;
+		HighScoreText.text = _highScore.ToString();
+		ThisTimeScoreText.text = (_round-1).ToString();
+
+		Invoke ("ShowGameOverUI", TheCameraFade.FadeOutDuration);
+		//Time.timeScale = 0f;
 
 		//show lost
 		// show score and save it to the prefab
@@ -180,9 +206,18 @@ public class GameManager : MonoBehaviour {
 		// ui with fade animation
 		//restart with fadeanimation
 
+	}
+
+	public void ShowGameOverUI(){
+
+		GameOverUI.SetActive (true);
+
+
+
 
 
 	}
+
 
 
 	//for buttons

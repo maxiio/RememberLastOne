@@ -7,13 +7,14 @@ public class ObjectController : MonoBehaviour, IPointerDownHandler {
 
 
 
-	public Camera mainCam;
-	public GameObject circlePrefab;
+	public Camera MainCam;
+	public GameObject BaseElemetnPrefab;
+	public GameObject BaseElementParent;
 
 
 
-	public float scallingToSize=24f;
-	public float scallingTime=1f;
+	public float ScallingToSize=24f;
+	public float ScallingTime=1f;
 
 
 	private float _showingLevelTime=1f;
@@ -45,13 +46,13 @@ public class ObjectController : MonoBehaviour, IPointerDownHandler {
 		transform.position = tran.Position;
 		transform.rotation = tran.Rotation;
 
-		GameManager.instance.SetForbiddenArea (tran);
+		GameManager.Instance.SetForbiddenArea (tran);
 
 		_spriteRenderer.color=GetRandomColor();
 
-		_scallingSpeed = scallingToSize / scallingTime;
+		_scallingSpeed = ScallingToSize / ScallingTime;
 
-		_showingLevelTime = GameManager.instance.showingLevelTime;
+		_showingLevelTime = GameManager.Instance.ShowingLevelTime;
 
 	}
 	
@@ -59,7 +60,7 @@ public class ObjectController : MonoBehaviour, IPointerDownHandler {
 
 		//scale to screen edges
 
-		if (_isScaling && _usingtime<=scallingTime) {
+		if (_isScaling && _usingtime<=ScallingTime) {
 			transform.localScale += new Vector3 (_scallingSpeed, _scallingSpeed,0)*Time.deltaTime;
 
 
@@ -73,7 +74,7 @@ public class ObjectController : MonoBehaviour, IPointerDownHandler {
 	private SimpleTransform GetRandomTransform(){
 
 
-		return GameManager.instance.GetUniqueRandomTransform ();
+		return GameManager.Instance.GetUniqueRandomTransform ();
 
 	}
 
@@ -82,9 +83,20 @@ public class ObjectController : MonoBehaviour, IPointerDownHandler {
 
 	private Color GetRandomColor(){
 
+		Color color=GameManager.Instance.GetRandomColor ();
 
 
-		return GameManager.instance.GetRandomColor ();
+		if (color.r -MainCam.backgroundColor.r <= .05f &&
+			color.g -MainCam.backgroundColor.g <= .05f && 
+			color.b -MainCam.backgroundColor.b <= .05f) //
+		{
+
+			color=GameManager.Instance.GetRandomColor ();
+		} //do not return a color near the bg color
+
+
+
+		return color;
 	}
 
 
@@ -95,20 +107,23 @@ public class ObjectController : MonoBehaviour, IPointerDownHandler {
 
 		Debug.Log (name+" Return to origin scale");
 		transform.localScale = _originScale;
-		Instantiate (circlePrefab);
 
+		GameObject go =
+			Instantiate (BaseElemetnPrefab) as GameObject;
+
+		go.transform.parent = BaseElementParent.transform;
 	}
 
-	public void ShowRound(){
+	public void NextRound(){
 
-		GameManager.instance.ShowRound ();
+		GameManager.Instance.NextRound ();
 
 	}
 
 	public void GameOver(){
 
 
-		GameManager.instance.GameOver ();
+		GameManager.Instance.GameOver ();
 	}
 
 	public void OnPointerDown(PointerEventData eventData){
@@ -121,9 +136,11 @@ public class ObjectController : MonoBehaviour, IPointerDownHandler {
 			//then islastone is false
 
 
+			GetComponent<AudioSource> ().Play ();
+
 			_isScaling = true;
-			Invoke ("GetBackState", scallingTime+_showingLevelTime);
-			Invoke ("ShowRound", scallingTime);
+			Invoke ("GetBackState", ScallingTime+_showingLevelTime);
+			Invoke ("NextRound", ScallingTime);
 
 
 			_isTheLastOne = false;
