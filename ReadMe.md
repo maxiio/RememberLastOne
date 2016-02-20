@@ -21,3 +21,7 @@ And I got some idea too
 - how about use "Zhao" as the shape, you know "How dare you name yourself Zhao" in one of Luxun's article, but maybe this is a little nude to my friend, I am thinking of it.
 
 I got a little busy now, so maybe I have to delay this project.
+
+- game speed control
+- use transform to replace with PositionAndScale
+- support multi shape (like tringle, Zhao...)

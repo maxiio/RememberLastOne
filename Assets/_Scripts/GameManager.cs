@@ -26,10 +26,10 @@ public class GameManager : MonoBehaviour {
 	public float sizeMin=.5f;
 	public float sizeMax=2f;
 
-	private int _circleNum;
+	private int _objectNum;
 
 
-	private List<PositionAndScale> circlePNSes = new List<PositionAndScale> ();
+	private List<SimpleTransform> objectTransforms = new List<SimpleTransform> ();
 
 
 
@@ -55,20 +55,20 @@ public class GameManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		_circleNum = 1;
+		_objectNum = 1;
 
 		ShowLevelUI.SetActive (false);
 	}
 
 
 
-	private bool IsInForbiddenArea(PositionAndScale pns){
+	private bool IsInForbiddenArea(SimpleTransform tran){
 
-		for (int i = 0; i < circlePNSes.Count; i++) {
+		for (int i = 0; i < objectTransforms.Count; i++) {
 
 
-			if (Vector2.Distance (pns.Position, circlePNSes[i].Position) 
-				< (pns.Scale.x / 2f + circlePNSes[i].Scale.x / 2f)) {
+			if (Vector2.Distance (tran.Position, objectTransforms[i].Position) 
+				< (tran.LocalScale.x / 2f + objectTransforms[i].LocalScale.x / 2f)) {
 
 
 				return true;
@@ -84,57 +84,62 @@ public class GameManager : MonoBehaviour {
 
 
 
-
-
-	public void SetForbiddenArea(PositionAndScale pas){
+	public void SetForbiddenArea(SimpleTransform tran){
 
 
 
-		circlePNSes.Add (pas);
+		objectTransforms.Add (tran);
 
 	}
 
 
 
-	public PositionAndScale GetOriginalRandomPositionAndScale(){
+	public SimpleTransform GetUniqueRandomTransform(){
 
 
-		PositionAndScale pns = GetRandomPositionAndScale ();
+		SimpleTransform tran = GetRandomTransform ();
 
-		while (IsInForbiddenArea (pns)) {
+		while (IsInForbiddenArea (tran)) {
 
-			pns = GetRandomPositionAndScale ();
+			tran = GetRandomTransform ();
 
 		}
 
-		return pns;
+		return tran;
 
 
 	}
 
-	private PositionAndScale GetRandomPositionAndScale(){
+	private SimpleTransform GetRandomTransform(){
 
-		PositionAndScale pns = new PositionAndScale ();
+		SimpleTransform tran=new SimpleTransform();
 
-		float s= Random.Range (sizeMin, sizeMax);
-		Vector2 scale = new Vector2 (s, s);
+		//scale
+		float size= Random.Range (sizeMin, sizeMax);
+		Vector2 scale = new Vector2 (size, size);
+
+		//rotation
+		float zRotation=Random.Range(-180f,180f);
+		Quaternion rotation = Quaternion.AngleAxis (zRotation, Vector3.back);
 
 
 
+		//position
 		float x=Random.Range(-mainCam.aspect*mainCam.orthographicSize+scale.x/2,
 			mainCam.aspect*mainCam.orthographicSize-scale.x/2);
 
 		float y=Random.Range(-mainCam.orthographicSize +scale.y/2,
 			mainCam.orthographicSize -scale.y/2);
 
-
 		Vector2 position = new Vector2 (x, y);
 
 
-		pns.Position = position;
-		pns.Scale = scale;
+		tran.Position = position;
+		tran.Rotation = rotation;
+		tran.LocalScale = scale;
 
-		return pns;
+
+		return tran;
 	}
 
 
@@ -147,11 +152,11 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void ShowRound(){
-		_circleNum++;
+		_objectNum++;
 
 		//show score aka the level/ circle num with animation
 		ShowLevelUI.SetActive(true);
-		scoreText.text = "Round " + _circleNum;
+		scoreText.text = "Round " + _objectNum;
 
 		Invoke ("HideRound", showingLevelTime);
 

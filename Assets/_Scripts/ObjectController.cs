@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine.EventSystems;
 
 
-public class CircleController : MonoBehaviour, IPointerDownHandler {
+public class ObjectController : MonoBehaviour, IPointerDownHandler {
 
 
 
@@ -38,13 +38,14 @@ public class CircleController : MonoBehaviour, IPointerDownHandler {
 	// Use this for initialization
 	void Start () {
 
-		PositionAndScale pns = GetRandomPositionAndScale ();
-		_originScale = pns.Scale;
+		SimpleTransform tran = GetRandomTransform ();
+		_originScale = tran.LocalScale;
 
 		transform.localScale = _originScale;
-		transform.position = pns.Position;
+		transform.position = tran.Position;
+		transform.rotation = tran.Rotation;
 
-		GameManager.instance.SetForbiddenArea (pns);
+		GameManager.instance.SetForbiddenArea (tran);
 
 		_spriteRenderer.color=GetRandomColor();
 
@@ -55,7 +56,8 @@ public class CircleController : MonoBehaviour, IPointerDownHandler {
 	}
 	
 	void Update(){
-		
+
+		//scale to screen edges
 
 		if (_isScaling && _usingtime<=scallingTime) {
 			transform.localScale += new Vector3 (_scallingSpeed, _scallingSpeed,0)*Time.deltaTime;
@@ -68,10 +70,10 @@ public class CircleController : MonoBehaviour, IPointerDownHandler {
 
 	}
 
-	private PositionAndScale GetRandomPositionAndScale(){
+	private SimpleTransform GetRandomTransform(){
 
 
-		return GameManager.instance.GetOriginalRandomPositionAndScale ();
+		return GameManager.instance.GetUniqueRandomTransform ();
 
 	}
 
