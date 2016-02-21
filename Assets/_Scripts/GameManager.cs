@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour {
 	public Camera MainCam;
 
 	public GameObject ShowLevelUI;
-	public Text ScoreText;
+	public Text RoundText;
 	public Text HighScoreText;
 	public Text ThisTimeScoreText;
 
@@ -171,12 +171,12 @@ public class GameManager : MonoBehaviour {
 
 
 		ShowLevelUI.SetActive(true);
-		ScoreText.text = "Round " + _round;
+		RoundText.text = "Round " + _round;
 
 
 		if (_round > _highScore) {
 
-			PlayerPrefs.SetInt (_highScoreKey, _round);
+			PlayerPrefs.SetInt (_highScoreKey, _round-1);
 
 		}
 
